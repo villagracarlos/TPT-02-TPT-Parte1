@@ -1,3 +1,6 @@
+#ifndef TAD_AST_H
+#define TAD_AST_H
+
 #include "TAD_String.h"
 
 #define STR 1
@@ -16,9 +19,10 @@ typedef struct dataType{
 }*Tdata;
 
 Tdata create_str_ast(String);
-Tdata str(char*); //para crear un string en el main: Tdata a = str("Hola mundo");
+Tdata str(char*);
 Tdata create_list();
 Tdata create_set();
+bool equals(Tdata, Tdata);
 
 //Operaciones sobre LIST
 void append(Tdata*, Tdata);
@@ -33,6 +37,7 @@ void insert_set(Tdata*, Tdata);
 bool belongs(Tdata, Tdata);
 void remove_set(Tdata*, Tdata);
 Tdata copy_set(Tdata);
+int cardinal(Tdata set);
 
 //Opreaciones algebraicas
 Tdata union_set(Tdata, Tdata);
@@ -45,3 +50,7 @@ void print_Tdata(Tdata);
 
 Tdata str_to_list(Tdata);
 Tdata cartesian_product_set(Tdata , Tdata);
+void free_Tdata(Tdata t);
+Tdata copy(Tdata elem);
+
+#endif

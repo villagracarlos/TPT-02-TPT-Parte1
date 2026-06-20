@@ -1,3 +1,6 @@
+#ifndef TAD_STRING_H
+#define TAD_STRING_H
+
 #include <stdbool.h>
 
 typedef struct Nodo{
@@ -13,3 +16,5 @@ String concatSTR(String, String);
 bool esIgualSTR(String, String);
 void printSTR(String);
 String copySTR(String);
+
+#endif

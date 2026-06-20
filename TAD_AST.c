@@ -463,3 +463,20 @@ Tdata cartesian_product_set(Tdata set1, Tdata set2){
 	}
 	return retorno;
 }
+
+int cardinal(Tdata set){
+    if(set == NULL || set->nodeType != SET){
+        printf("ERROR: No es un conjunto\n");
+        return -1;
+    }
+
+    int c = 0;
+    Tdata actual = set->data;
+
+    while(actual != NULL){
+        c++;
+        actual = actual->next;
+    }
+
+    return c;
+}
