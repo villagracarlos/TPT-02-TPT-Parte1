@@ -1,0 +1,15 @@
+#Ejemplo 1: AFD que reconoce cadenas que terminan en 'b'
+ESTADOS
+q0 q1
+
+INICIAL
+q0
+
+FINALES
+q1
+
+TRANSICIONES
+q0 a q0
+q0 b q1
+q1 a q0
+q1 b q1

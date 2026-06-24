@@ -1,8 +1,38 @@
 #include "TAD_AF.h"
+#include "TAD_READER.h"
 #include <stdio.h>
 #include <stdbool.h>
 
+void harcodeado();
+void archivotxt();
+
 int main(){
+    int opcion=0;
+
+    printf("Ingrese tipo de carga:\n");
+    printf("Harcodeado = 1\n");
+    printf("Archivo de texto = 2\n");
+    printf("Salir = 0\n");
+
+    fflush(stdout);
+    printf("Opcion:");
+    scanf("%d", &opcion);
+    
+    switch(opcion){
+        case 1:
+            harcodeado();
+            break;
+        case 2:
+            archivotxt();
+            break;
+        default:
+            printf("Saliendo del programa.\n");
+    }
+
+    return 0;
+}
+
+void harcodeado(){
     // ============================================================
     //  Ejemplo 1: AFD que reconoce cadenas que terminan en 'b'
     // ============================================================
@@ -27,8 +57,6 @@ int main(){
     printf("b      -> %s\n",process(AFD1, "b") ? "ACEPTADA" : "RECHAZADA");
     printf("ab     -> %s\n",process(AFD1, "ab") ? "ACEPTADA" : "RECHAZADA");
     printf("aba    -> %s\n",process(AFD1, "aba") ? "ACEPTADA" : "RECHAZADA");
-    printf("abab   -> %s\n",process(AFD1, "abab") ? "ACEPTADA" : "RECHAZADA");
-    printf("aaaa   -> %s\n",process(AFD1, "aaaa") ? "ACEPTADA" : "RECHAZADA");
     
     // ============================================================
     //  Ejemplo 2: AFD que reconoce el lenguaje "ab"
@@ -98,6 +126,35 @@ int main(){
     printf("ba     -> %s\n",process(AFND2, "ba") ? "ACEPTADA" : "RECHAZADA");
     printf("bab    -> %s\n",process(AFND2, "bab") ? "ACEPTADA" : "RECHAZADA");
     printf("bbbabbb-> %s\n",process(AFND2, "bbbabbb") ? "ACEPTADA" : "RECHAZADA");
+}
 
-    return 0;
+void archivotxt(){
+    char nombreArchivo[100];
+    char cadena[100];
+    int opcion=0;
+
+    printf("Ingrese el nombre del archivo mas su extension (.txt): ");
+    scanf("%99s", nombreArchivo);   //%99s para limitar la longitud del texto ingresado
+
+    Automata* A = load_automata(nombreArchivo);
+    if(A == NULL){
+        printf("No se pudo cargar el automata.\n");
+        return;
+    }
+
+    printf("  ==================================================\n");
+    printf("  %s", get_first_line(nombreArchivo));
+    printf("  ==================================================\n");
+    print_automata(A);
+
+    do{
+        printf("Ingregse una cadena a evaluar: ");
+        scanf("%99s", cadena);
+        if(process(A, cadena)) printf("Cadena aceptada.\n");
+        else printf("Cadena rechazada.\n");
+
+        printf("Ingresar otra cadena? Si=1 No=0\t");
+        scanf("%d", &opcion);
+    }while(opcion == 1);
+    
 }
