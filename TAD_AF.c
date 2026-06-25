@@ -265,3 +265,159 @@ bool process(Automata* A, char* cadena){
 
     return process_AFND(A, cadena);
 }
+Automata* determinize(Automata* AFND) {
+	if (AFND == NULL) return NULL;
+	if (AFND->deterministic) return AFND;
+	
+	Automata* AFD = create_automata();
+	AFD->deterministic = true;
+	
+	Tdata sigma = create_set();//conjnto sigma de simbolos
+	StateNode* q = AFND->states;
+	while (q != NULL) {
+		Transition* t = q->transitions;
+		while (t != NULL) {
+			insert_set(&sigma, t->symbol);
+			t = t->next;
+		}
+		q = q->next;
+	}
+	
+	Tdata subsets = create_list();
+	Tdata names   = create_list();
+	int counter   = 0;//contador para nombrar los estados cundo los agrege
+	int processed = 0;//que se va a procesar despues
+	
+	//el estado inicial p0 sera {q0}
+	Tdata q0set = create_set();
+	insert_set(&q0set, copy(AFND->q0->name));
+	
+	char pname[3];
+	pname[0] = 'p';
+	pname[1] = '0' + counter;
+	pname[2] = '\0';
+	counter++;
+
+	append(&subsets, q0set);
+	append(&names, str(pname));
+	
+	bool isFinal = false;
+	Tdata nodo = q0set->data;
+	while (nodo != NULL) {
+		if (find_state_data(AFND, nodo->data)->isFinal) { 
+			isFinal = true; 
+			break; 
+		}
+		nodo = nodo->next;
+	}
+	add_state(AFD, pname, isFinal);
+	AFD->q0 = AFD->states;
+	
+	while (processed < length(subsets)) {
+		Tdata curSet  = NULL;
+		Tdata curName = NULL;
+		Tdata it = subsets->data;
+		int   idx = 0;
+		while (it != NULL) {
+			if (idx == processed) {
+				curSet = it->data; break; 
+			}
+			it = it->next; idx++;
+		}
+		it = names->data; idx = 0;
+		while (it != NULL) {
+			if (idx == processed) {
+				curName = it->data; break; 
+			}
+			it = it->next; idx++;
+		}
+		
+		char fromBuf[20];
+		String s = curName->string;
+		int i = 0;
+		while (s != NULL) { fromBuf[i++] = s->dato; s = s->sig; }
+		fromBuf[i] = '\0';
+		
+		Tdata sigNodo = sigma->data;
+		while (sigNodo != NULL) {
+			char symBuf[20];
+			String sym = sigNodo->data->string;
+			i = 0;
+			while (sym != NULL) { symBuf[i++] = sym->dato; sym = sym->sig; }
+			symBuf[i] = '\0';
+			
+			Tdata dest = create_set();
+			Tdata qi = curSet->data;
+			while (qi != NULL) {
+				StateNode* node = find_state_data(AFND, qi->data);
+				if (node != NULL) {
+					Tdata d = delta(node, symBuf);
+					Tdata dj = d->data;
+					while (dj != NULL) {
+						insert_set(&dest, dj->data);
+						dj = dj->next;
+					}
+					free_Tdata(d);
+				}
+				qi = qi->next;
+			}
+			
+			if (cardinal(dest) == 0) {
+				free_Tdata(dest);
+				sigNodo = sigNodo->next;
+				continue;
+			}
+			
+			char toBuf[4];
+			bool found = false;
+			Tdata si = subsets->data;
+			Tdata ni = names->data;
+			while (si != NULL) {
+				if (equals_set(si->data, dest)) {
+					String ns = ni->data->string;
+					int j = 0;
+					while (ns != NULL) {
+						toBuf[j++] = ns->dato; ns = ns->sig; 
+					}
+					toBuf[j] = '\0';
+					found = true;
+					break;
+				}
+				si = si->next;
+				ni = ni->next;
+			}
+			
+			if (!found) {
+				toBuf[0] = 'p';
+				toBuf[1] = '0' + counter;
+				toBuf[2] = '\0';
+				counter++;
+				
+				append(&subsets, dest);
+				append(&names, str(toBuf));
+				
+				isFinal = false;
+				Tdata d2 = dest->data;
+				while (d2 != NULL) {
+					if (find_state_data(AFND, d2->data)->isFinal) {
+						isFinal = true; break; 
+					}
+					d2 = d2->next;
+				}
+				add_state(AFD, toBuf, isFinal);
+			} else {
+				free_Tdata(dest);
+			}
+			
+			add_transition(AFD, fromBuf, symBuf, toBuf);
+			sigNodo = sigNodo->next;
+		}
+		processed++;
+	}
+	
+	free_Tdata(sigma);
+	free_Tdata(subsets);
+	free_Tdata(names);
+	
+	return AFD;
+}
